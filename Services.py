@@ -59,43 +59,45 @@ def filterResultsByMode(rows, mode):
     return result
 
 def displaySoloResults(file, mode, window_surface):
+    color = 'black'
     soloResults = getResults(file, mode)
 
     text = pygame.font.SysFont("comicsansms", 18)
-    value = text.render('                        SOLO                        ', True, 'red')
+    value = text.render('                        SOLO                        ', True, color)
     window_surface.blit(value, [150, 170])
     text = pygame.font.SysFont("comicsansms", 14)
-    value = text.render('----------------------------------------------', True, 'red')
+    value = text.render('----------------------------------------------', True, color)
     window_surface.blit(value, [150, 185])
-    value = text.render('            Date             |     Mode    |   Score', True, 'red')
+    value = text.render('            Date             |     Mode    |   Score', True, color)
     window_surface.blit(value, [150, 200])
-    value = text.render('----------------------------------------------', True, 'red')
+    value = text.render('----------------------------------------------', True, color)
     window_surface.blit(value, [150, 210])
 
     text = pygame.font.SysFont("comicsansms", 12)
     pos = 210
     for data in soloResults:
         pos += 15
-        value = text.render(data[0] + '    |    ' + data[1] + '    |        ' + data[2], True, 'red')
+        value = text.render(data[0] + '    |    ' + data[1] + '    |        ' + data[2], True, color)
         window_surface.blit(value, [150, pos])
 
 def displayMultiResults(file, mode, window_surface):
+    color = 'black'
     multiResults = getResults(file, mode)
 
     text = pygame.font.SysFont("comicsansms", 18)
-    value = text.render('                         MULTI                        ', True, 'red')
+    value = text.render('                         MULTI                        ', True, color)
     window_surface.blit(value, [830, 170])
     text = pygame.font.SysFont("comicsansms", 14)
-    value = text.render('--------------------------------------------------', True, 'red')
+    value = text.render('--------------------------------------------------', True, color)
     window_surface.blit(value, [830, 185])
-    value = text.render('            Date              |     Mode   |     Gagnant', True, 'red')
+    value = text.render('            Date              |     Mode   |     Gagnant', True, color)
     window_surface.blit(value, [830, 200])
-    value = text.render('--------------------------------------------------', True, 'red')
+    value = text.render('--------------------------------------------------', True, color)
     window_surface.blit(value, [830, 210])
 
     text = pygame.font.SysFont("comicsansms", 12)
     pos = 210
     for data in multiResults:
         pos += 15
-        value = text.render(data[0] + '    |    ' + data[1] + '    |     ' + data[2], True, 'red')
+        value = text.render(data[0] + '    |    ' + data[1] + '    |     ' + data[2], True, color)
         window_surface.blit(value, [830, pos])

@@ -30,8 +30,19 @@ window_image = pygame.image.load("./img/wallpaper_snake.png").convert_alpha()
 window_start = pygame.image.load("./img/wallpaper_start.png").convert_alpha()
 window_lose = pygame.image.load("./img/wallpaper_lose.png").convert_alpha()
 image_food = pygame.image.load("./img/framboise.png").convert_alpha()
-image_food = pygame.transform.scale(image_food, (40, 40)) 
-food_image = image_food.get_rect()
+image_food = pygame.transform.scale(image_food, (40, 40))
+
+image_food2 = pygame.image.load("./img/framboiseGreen.png").convert_alpha()
+image_food2 = pygame.transform.scale(image_food2, (40, 40))
+
+image_food3 = pygame.image.load("./img/framboiseBlue.png").convert_alpha()
+image_food3 = pygame.transform.scale(image_food3, (40, 40))
+
+image_food4 = pygame.image.load("./img/framboiseBlack.png").convert_alpha()
+image_food4 = pygame.transform.scale(image_food4, (40, 40))
+
+image_food5 = pygame.image.load("./img/framboiseYellow.png").convert_alpha()
+image_food5 = pygame.transform.scale(image_food5, (40, 40))
 
 #Buttons
 solo_btn_image = pygame.image.load('./img/solo.png').convert_alpha()
@@ -115,6 +126,9 @@ def gameLoop(isMulti, mode):
     # La position est donc un multiple de 15, notre serpent peut le manger
     foodx = round(random.randrange(0, window_width - snake_block) / snake_block) * snake_block
     foody = round(random.randrange(0, window_height - snake_block) / snake_block) * snake_block
+    food = 1
+
+    speed = 0
 
     if mode == 'no_limit':
         startTimer = time.time()
@@ -315,8 +329,16 @@ def gameLoop(isMulti, mode):
 
         #rect(surface, couleur, [posX, posY, sizeX, sizeY]) définit un rectangle qui est ici la bouffe
         #pygame.draw.rect(window_surface, window_color, [foodx, foody, snake_block, snake_block])
-        window_surface.blit(image_food, (foodx, foody))
-        
+
+        if food == 2:
+            window_surface.blit(image_food2, (foodx, foody))
+        elif food == 3:
+            window_surface.blit(image_food3, (foodx, foody))
+        elif food == 4:
+            window_surface.blit(image_food4, (foodx, foody))
+        else:
+            window_surface.blit(image_food, (foodx, foody))
+
         #Comme indiqué c'est la tête du serpent
         snake_Head = []
         snake_Head.append(x1)
@@ -388,36 +410,67 @@ def gameLoop(isMulti, mode):
         if x1 == foodx and y1 == foody:
             foodx = round(random.randrange(0, window_width - snake_block) / snake_block) * snake_block
             foody = round(random.randrange(0, window_height - snake_block) / snake_block) * snake_block
-            Length_of_snake += 1
+
+            if food == 1:
+                speed = 0
+                Length_of_snake += 1
+            elif food == 2:
+                speed = 10
+            elif food == 3:
+                speed = 0
+                Length_of_snake += 2
+            elif food == 4:
+                speed = 0
+                if Length_of_snake > 1:
+                    Length_of_snake -= 1
+                    del snake_List[0]
+
+            food = random.randrange(1, 5)
 
         if isMulti and x2 == foodx and y2 == foody:
+            food = random.randrange(1, 5)
             foodx = round(random.randrange(0, window_width - snake_block) / snake_block) * snake_block
             foody = round(random.randrange(0, window_height - snake_block) / snake_block) * snake_block
-            Length_of_snake2 += 1
+
+            if food == 1:
+                speed = 0
+                Length_of_snake2 += 1
+            elif food == 2:
+                speed = 10
+            elif food == 3:
+                speed = 0
+                Length_of_snake2 += 2
+            elif food == 4:
+                speed = 0
+                if Length_of_snake2 > 1:
+                    Length_of_snake2 -= 1
+                    del snake_List[0]
+
+            food = random.randrange(1, 5)
 
         #Vitesse du snake
         if isMulti:
             if (Length_of_snake > 6 and Length_of_snake <= 12) or (Length_of_snake2 > 6 and Length_of_snake2 <= 12):
-                clock.tick(13)
+                clock.tick(speed + 13)
             elif (Length_of_snake > 12 and Length_of_snake <= 18) or (Length_of_snake2 > 12 and Length_of_snake2 <= 18):
-                clock.tick(16)
+                clock.tick(speed + 16)
             elif (Length_of_snake > 18 and Length_of_snake <= 24) or (Length_of_snake2 > 18 and Length_of_snake2 <= 24):
-                clock.tick(19)
+                clock.tick(speed + 19)
             elif Length_of_snake > 24 or Length_of_snake2 > 24:
-                clock.tick(22)
+                clock.tick(speed + 22)
             else:
-                clock.tick(10)
+                clock.tick(speed + 10)
         else:
             if Length_of_snake > 6 and Length_of_snake <= 12:
-                clock.tick(13)
+                clock.tick(speed + 13)
             elif Length_of_snake > 12 and Length_of_snake <= 18 :
-                clock.tick(16)
+                clock.tick(speed + 16)
             elif Length_of_snake > 18 and Length_of_snake <= 24:
-                clock.tick(19)
+                clock.tick(speed + 19)
             elif Length_of_snake > 24:
-                clock.tick(22)
+                clock.tick(speed + 22)
             else:
-                clock.tick(10)
+                clock.tick(speed + 10)
             
     launcher()
 
