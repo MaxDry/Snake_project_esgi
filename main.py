@@ -3,9 +3,11 @@ import time
 import random
 import sys
 import time
+import csv
 from Button import Button
-from Services import our_snake, Your_score
+from Services import our_snake, Your_score, display_text, addResult, displaySoloResults, displayMultiResults
 from pygame import image
+from tabulate import tabulate
 from pygame.transform import scale
 
 pygame.init()
@@ -41,6 +43,8 @@ classic_btn_image = pygame.image.load('./img/classic.png').convert_alpha()
 no_wall_btn_image = pygame.image.load('./img/no_wall.png').convert_alpha()
 no_limit_btn_image = pygame.image.load('./img/no_limit.png').convert_alpha()
 classement_btn_image = pygame.image.load('./img/classement.png').convert_alpha()
+all_btn_image = pygame.image.load('./img/all.png').convert_alpha()
+
 
 solo_button = Button(650, 250, solo_btn_image, 0.8)
 multi_button = Button(650, 400, multi_btn_image, 0.8)
@@ -51,6 +55,10 @@ classic_button = Button(300, 300, classic_btn_image, 0.8)
 no_wall_button = Button(650, 300, no_wall_btn_image, 0.8)
 no_limit_button = Button(1000, 300, no_limit_btn_image, 0.8)
 classement_button = Button(190, 60, classement_btn_image, 0.8)
+filter_all_button = Button(360, 50, all_btn_image, 0.4)
+filter_classic_button = Button(540, 50, classic_btn_image, 0.4)
+filter_no_wall_button = Button(740, 50, no_wall_btn_image, 0.4)
+filter_no_limit_button = Button(940, 50, no_limit_btn_image, 0.4)
 
 #Font des écritures de fin et du score
 font_style = pygame.font.SysFont("bahnschrift", 25)
@@ -61,6 +69,7 @@ snake_block = 40
 window_color=(143,151,121)
 color_snake=(11, 102, 35)
 color_snake2=(255,0,0)
+color_timer=(0,0,0)
 red = (255, 0, 0)
 white = (255, 255, 255)
 game_start = False
@@ -75,6 +84,9 @@ clock = pygame.time.Clock()
 def gameLoop(isMulti, mode):
     game_over = False
     game_close = False
+
+    dataResult = None
+    lastDataResult = None
 
     #Emplacement de départ
     x1 = window_width * 0.75
@@ -106,27 +118,49 @@ def gameLoop(isMulti, mode):
 
     if mode == 'no_limit':
         startTimer = time.time()
+        counter = 0
     #Logique du code
     while not game_over:
-        if mode == 'no_limit' and time.time() - startTimer >= 60:
-            game_close = True
+        if mode == 'no_limit':
+            counter = round(time.time() - startTimer)
 
-            if isMulti:
-                if Length_of_snake > Length_of_snake2:
-                    print('Fin : gagnant 2, score :',  Length_of_snake - 1)
-                elif Length_of_snake < Length_of_snake2:
-                    print('Fin : gagnant 1, score :',  Length_of_snake2 - 1)
+            if time.time() - startTimer >= 60:
+                if isMulti:
+                    if Length_of_snake > Length_of_snake2:
+                        dataResult = 'Joueur 2'
+                    elif Length_of_snake < Length_of_snake2:
+                        dataResult = 'Joueur 1'
+                    else:
+                        dataResult = 'Joueur 1 & Joueur 2'
                 else:
-                    print('Fin : match null, score :',  Length_of_snake - 1)
-            else:
-                print('Fin : score....', Length_of_snake - 1)
+                    dataResult = Length_of_snake - 1
+                game_close = True
         #Effectue le traitement de tout ce while à chaque fois que le snake avance d'une case
         while game_close == True:
+            if dataResult != None:
+                lastDataResult = dataResult
+
             #Affichage de la fenetre si tu as perdu
             mouse_pos = pygame.mouse.get_pos()
 
             window_surface.fill(white)
             window_surface.blit(window_lose, (0, 0))
+
+            if lastDataResult != None:
+                text = pygame.font.SysFont("comicsansms", 30)
+                value = text.render('SCORE : ' + str(lastDataResult) if str(lastDataResult).isdigit() else 'GAGNANT : ' + lastDataResult, True, 'white')
+                window_surface.blit(value, [50, 50])
+
+            if dataResult != None:
+                if mode == 'classic':
+                    dataMode = 'Classic'
+                elif mode == 'no_wall':
+                    dataMode = 'No wall'
+                else:
+                    dataMode = 'No limit'
+
+                addResult(dataResult, dataMode, 'results/multi.csv' if isMulti else 'results/solo.csv')
+                dataResult = None
 
             for button in [restart_button, back_button]:
                 button.update(window_surface)
@@ -140,6 +174,19 @@ def gameLoop(isMulti, mode):
                     if restart_button.checkForInput(mouse_pos):
                         gameLoop(isMulti, mode)
                     if back_button.checkForInput(mouse_pos):
+                        x1 = window_width * 0.75
+                        y1 = window_height * 0.5
+                        x2 = window_width * 0.25
+                        y2 = window_height * 0.5
+                        x1_change = 0
+                        y1_change = 0
+                        x2_change = 0
+                        y2_change = 0
+                        snake_List = []
+                        snake_List2 = []
+                        Length_of_snake = 1
+                        Length_of_snake2 = 1
+
                         game_over = True
                         game_close = False
 
@@ -151,41 +198,41 @@ def gameLoop(isMulti, mode):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
                     if x1_change == snake_block and mode != 'no_limit':
-                        game_close = True
                         if isMulti:
-                            print('game over : gagnant 1')
+                            dataResult = 'Joueur 1'
                         else:
-                            print('game over : score....', Length_of_snake - 1)
+                            dataResult = Length_of_snake - 1
+                        game_close = True
                     else:
                         x1_change = -snake_block
                         y1_change = 0
                 elif event.key == pygame.K_RIGHT:
                     if x1_change == -snake_block and mode != 'no_limit':
-                        game_close = True
                         if isMulti:
-                            print('game over : gagnant 1')
+                            dataResult = 'Joueur 1'
                         else:
-                            print('game over : score....', Length_of_snake - 1)
+                            dataResult = Length_of_snake - 1
+                        game_close = True
                     else:
                         x1_change = snake_block
                         y1_change = 0
                 elif event.key == pygame.K_UP:
                     if y1_change == snake_block and mode != 'no_limit':
-                        game_close = True
                         if isMulti:
-                            print('game over : gagnant 1')
+                            dataResult = 'Joueur 1'
                         else:
-                            print('game over : score....', Length_of_snake - 1)
+                            dataResult = Length_of_snake - 1
+                        game_close = True
                     else:
                         y1_change = -snake_block
                         x1_change = 0
                 elif event.key == pygame.K_DOWN:
                     if y1_change == -snake_block and mode != 'no_limit':
-                        game_close = True
                         if isMulti:
-                            print('game over : gagnant 1')
+                            dataResult = 'Joueur 1'
                         else:
-                            print('game over : score....', Length_of_snake - 1)
+                            dataResult = Length_of_snake - 1
+                        game_close = True
                     else:
                         y1_change = snake_block
                         x1_change = 0
@@ -193,29 +240,29 @@ def gameLoop(isMulti, mode):
                 if isMulti:
                     if event.key == pygame.K_q:
                         if x2_change == snake_block and mode != 'no_limit':
+                            dataResult = 'Joueur 2'
                             game_close = True
-                            print('game over : gagnant 2')
                         else:
                             x2_change = -snake_block
                             y2_change = 0
                     elif event.key == pygame.K_d:
                         if x2_change == -snake_block and mode != 'no_limit':
+                            dataResult = 'Joueur 2'
                             game_close = True
-                            print('game over : gagnant 2')
                         else:
                             x2_change = snake_block
                             y2_change = 0
                     elif event.key == pygame.K_z:
                         if y2_change == snake_block and mode != 'no_limit':
+                            dataResult = 'Joueur 2'
                             game_close = True
-                            print('game over : gagnant 2')
                         else:
                             y2_change = -snake_block
                             x2_change = 0
                     elif event.key == pygame.K_s:
                         if y2_change == -snake_block and mode != 'no_limit':
+                            dataResult = 'Joueur 2'
                             game_close = True
-                            print('game over : gagnant 2')
                         else:
                             y2_change = snake_block
                             x2_change = 0
@@ -223,14 +270,14 @@ def gameLoop(isMulti, mode):
         # Si x1(prochaine case du snake en x) supérieur à la limite ou inférieur à 0 ou y1 [...] c'est perdu
         if mode == 'classic':
             if x1 >= window_width or x1 < 0 or y1 >= window_height or y1 < 0:
-                game_close = True
                 if isMulti:
-                    print('game over : gagnant 1')
+                    dataResult = 'Joueur 1'
                 else:
-                    print('game over : score....', Length_of_snake - 1)
-            if isMulti and (x2 >= window_width or x2 < 0 or y2 >= window_height or y2 < 0):
+                    dataResult = Length_of_snake - 1
                 game_close = True
-                print('game over : gagnant 2')
+            if isMulti and (x2 >= window_width or x2 < 0 or y2 >= window_height or y2 < 0):
+                dataResult = 'Joueur 2'
+                game_close = True
 
         #Position de la prochaine case
         #ex : Position x actuel du snake est 150, j'appuie sur précedemment sur left donc 150 += -15 = 135
@@ -297,32 +344,33 @@ def gameLoop(isMulti, mode):
         #[:-1] Prend tous les éléments sauf le dernier(qui est la tête)
         if mode != 'no_limit':
             if isMulti and snake_Head == snake_Head2:
+                dataResult = 'Joueur 1 & Joueur 2'
                 game_close = True
-                print(x1, x1_change, y1, y1_change)
-                print(x2, x2_change, y2, y2_change)
-                print('game over : match null')
 
             for x in snake_List[:-1]:
                 if x == snake_Head:
-                    game_close = True
                     if isMulti:
-                        print('game over : gagnant 1')
+                        dataResult = 'Joueur 1'
                     else:
-                        print('game over : score....', Length_of_snake - 1)
-                if isMulti and x == snake_Head2:
+                        dataResult = Length_of_snake - 1
                     game_close = True
-                    print('game over : gagnant 2')
+                if isMulti and x == snake_Head2:
+                    dataResult = 'Joueur 2'
+                    game_close = True
 
             if isMulti:
                 for x in snake_List2[:-1]:
                     if x == snake_Head2:
+                        dataResult = 'Joueur 2'
                         game_close = True
-                        print('game over : gagnant 2')
                     if x == snake_Head:
+                        dataResult = 'Joueur 1'
                         game_close = True
-                        print('game over : gagnant 1')
 
         #Affichage du snake avec les rects
+
+        if mode == 'no_limit':
+            display_text(str(60 - counter), window_surface, [20, 20], color_timer)
 
         if isMulti:
             our_snake(snake_block, snake_List, color_snake, window_surface)
@@ -378,6 +426,38 @@ def gameLoop(isMulti, mode):
 
 
 #---------------------------------------------- LANCEMENT ---------------------------------------------
+def displayRanking(mode = None):
+    while True:
+        mouse_pos = pygame.mouse.get_pos()
+
+        window_surface.fill(white)
+        window_surface.blit(window_image, (0, 0))
+
+        displaySoloResults('results/solo.csv', mode, window_surface)
+        displayMultiResults('results/multi.csv', mode, window_surface)
+
+        for button in [back_button, filter_classic_button, filter_no_wall_button, filter_no_limit_button, filter_all_button]:
+            button.update(window_surface)
+
+        # Décision à prendre quand tu commences
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if filter_all_button.checkForInput(mouse_pos):
+                    return displayRanking()
+                if filter_classic_button.checkForInput(mouse_pos):
+                    return displayRanking('Classic')
+                if filter_no_wall_button.checkForInput(mouse_pos):
+                    return displayRanking('No wall')
+                if filter_no_limit_button.checkForInput(mouse_pos):
+                    return displayRanking('No limit')
+                if back_button.checkForInput(mouse_pos):
+                    return False
+
+        pygame.display.update()
+
 def setMode():
     while True:
         mouse_pos = pygame.mouse.get_pos()
@@ -433,6 +513,8 @@ def launcher():
                 if exit_button.checkForInput(mouse_pos):
                     pygame.quit()
                     sys.exit()
+                if classement_button.checkForInput(mouse_pos):
+                    displayRanking()
 
         pygame.display.update()
 
