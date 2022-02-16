@@ -107,7 +107,7 @@ def gameLoop(isMulti, mode):
     y2 = window_height * 0.5
 
     #Emplacement vers lequel le snake se dirige étant incrémenté dans le while
-    x1_change = 0       
+    x1_change = 0
     y1_change = 0
 
     x2_change = 0
@@ -280,7 +280,7 @@ def gameLoop(isMulti, mode):
                         else:
                             y2_change = snake_block
                             x2_change = 0
-        
+
         # Si x1(prochaine case du snake en x) supérieur à la limite ou inférieur à 0 ou y1 [...] c'est perdu
         if mode == 'classic':
             if x1 >= window_width or x1 < 0 or y1 >= window_height or y1 < 0:
@@ -415,6 +415,7 @@ def gameLoop(isMulti, mode):
                 speed = 0
                 Length_of_snake += 1
             elif food == 2:
+                Length_of_snake2 += 1
                 speed = 10
             elif food == 3:
                 speed = 0
@@ -427,8 +428,7 @@ def gameLoop(isMulti, mode):
 
             food = random.randrange(1, 5)
 
-        if isMulti and x2 == foodx and y2 == foody:
-            food = random.randrange(1, 5)
+        elif isMulti and x2 == foodx and y2 == foody:
             foodx = round(random.randrange(0, window_width - snake_block) / snake_block) * snake_block
             foody = round(random.randrange(0, window_height - snake_block) / snake_block) * snake_block
 
@@ -436,6 +436,7 @@ def gameLoop(isMulti, mode):
                 speed = 0
                 Length_of_snake2 += 1
             elif food == 2:
+                Length_of_snake2 += 1
                 speed = 10
             elif food == 3:
                 speed = 0
@@ -471,7 +472,7 @@ def gameLoop(isMulti, mode):
                 clock.tick(speed + 22)
             else:
                 clock.tick(speed + 10)
-            
+
     launcher()
 
 #---------------------------------------------- FIN - JEU ---------------------------------------------
