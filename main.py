@@ -415,7 +415,7 @@ def gameLoop(isMulti, mode):
                 speed = 0
                 Length_of_snake += 1
             elif food == 2:
-                Length_of_snake2 += 1
+                Length_of_snake += 1
                 speed = 10
             elif food == 3:
                 speed = 0
